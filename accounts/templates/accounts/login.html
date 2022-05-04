@@ -1,0 +1,35 @@
+{% extends 'accounts/base.html' %} {% load static %} {% block content %}
+
+<p class="login-title">Login</p>
+
+<form method="POST" class="login-form">
+  <h1>Ticket System</h1>
+
+  <div class="form-inner">
+    {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+      <li class="{{ message.tags }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %} {% csrf_token %}
+
+    <div class="input-group">
+      <input type="text" name="username" id="username" placeholder="Username" />
+    </div>
+
+    <div class="input-group">
+      <input
+        type="password"
+        name="password"
+        id="password"
+        placeholder="Password"
+      />
+    </div>
+
+    <input type="submit" class="btn btn-submit" />
+  </div>
+  <p>Don't have an account? <a href="{% url 'accounts:register' %}">Register</a></p>
+</form>
+
+{% endblock content %}

@@ -1,0 +1,56 @@
+{% extends 'ticketapp/base.html' %}
+
+
+{% block content %}
+
+
+
+
+<div class="container">
+    <h1>{{object.title}}</h1>
+    <p>Customer name: {{object.customer_full_name}}</p>
+    <p>Phone number: {{object.customer_phone_number}}</p>
+    <p>Email: <a href="mailto:{{object.customer_email}}">{{object.customer_email}}</a></p>
+    <p>Urgent: {{object.urgent_status}}</p>
+    <p>Completed: {{object.completed_status}}</p>
+    <p>Assigned To: {{object.assigned_to.first_name}} {{object.assigned_to.last_name}}</p>
+    <p>Created: {{object.created_date}}</p>
+
+    <br>
+
+    <p>{{object.issue_description}}</p>
+</div>
+
+<div class="container d-flex mt-2 ">
+    <a href="{% url 'ticketapp:update-ticket' pk=object.pk %}" class="btn btn-primary mr-2">Edit</a>
+    <a href="{% url 'ticketapp:delete-ticket' pk=object.pk %}" class="btn btn-danger">Delete</a>
+</div>
+
+
+<div class="container">
+    <form action="http://127.0.0.1:8000/add-comment/{{object.pk}}/" method="post">
+        {% csrf_token %}
+        <div class="form-group mt-2 mb-2">
+
+            <textarea name="comment" cols="15" rows="10" class="form-control" placeholder="Add Comment"></textarea>
+
+            <input type="submit" class="btn btn-secondary mt-2">
+
+        </div>
+
+    </form>
+</div>
+
+
+<div class="container">
+    {% for comment in comments %}
+    <div class="bg-light mt-2 mb-2">
+        <p class="text-secondary">@{{comment.user.username}} {{comment.created_date}}</p>
+        <p>{{comment.text}}</p>
+    </div>
+
+    {% endfor %}
+</div>
+
+
+{% endblock content %}

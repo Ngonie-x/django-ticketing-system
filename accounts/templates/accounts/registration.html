@@ -1,0 +1,28 @@
+{% extends 'accounts/base.html' %}
+
+{% load static %}
+{% block content %}
+
+<p class="login-title">Sign Up To Create a Ticket</p>
+
+<form action="" method="post" class="login-form">
+    {% csrf_token %}
+    <h1>Ticket System</h1>
+
+    <div class="form-inner">
+        {% for field in form %}
+            {{field}}<br>
+            {% for error in field.errors %}
+            <p style="color: red">{{ error }}</p>
+            {% endfor %}
+        {% endfor %}
+    </div>
+
+    <input type="submit" class="btn btn-submit" />
+
+    <p>Already have an account? <a href="{% url 'accounts:login' %}">Log in</a></p>
+</form>
+
+
+
+{% endblock content %}
