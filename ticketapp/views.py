@@ -1,6 +1,8 @@
+from turtle import title
 from django.shortcuts import render, HttpResponseRedirect
 from django.urls import reverse_lazy, reverse
 from django.views import generic
+from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from .models import Ticket, Comment
@@ -20,6 +22,10 @@ class TicketListView(LoginRequiredMixin, generic.ListView):
             assigned_to=self.request.user, completed_status=True).count()
         context['unresolved_count'] = Ticket.objects.filter(
             assigned_to=self.request.user, completed_status=False).count()
+        context['normal_user_list'] = Ticket.objects.filter(
+            user=self.request.user)
+        context['staff_user_list'] = Ticket.objects.filter(
+            assigned_to=self.request.user)
 
         return context
 
@@ -37,6 +43,10 @@ class TicketDetailView(LoginRequiredMixin, generic.DetailView):
 class TicketCreateView(LoginRequiredMixin, generic.CreateView):
     model = Ticket
     form_class = TicketForm
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
 
 
 class TicketUpdateView(LoginRequiredMixin, generic.UpdateView):
@@ -77,6 +87,19 @@ def unresolved_tickets(request):
     return render(request, 'ticketapp/unresolved_tickets.html', {'tickets': tickets})
 
 
+@login_required
+def mark_ticket_as_resolved(request, id):
+    Ticket.objects.filter(id=id).update(completed_status=True)
+    return HttpResponseRedirect(reverse("ticketapp:ticket-detail", kwargs={'pk': id}))
+
+
+@login_required
+def mark_ticket_as_unresolved(request, id):
+    Ticket.objects.filter(id=id).update(completed_status=False)
+    return HttpResponseRedirect(reverse("ticketapp:ticket-detail", kwargs={'pk': id}))
+
+
+@login_required
 def add_comment(request, ticket_id):
     if request.method == 'POST':
         comment = request.POST['comment']
@@ -85,3 +108,45 @@ def add_comment(request, ticket_id):
 
         Comment.objects.create(ticket=ticket, user=user, text=comment)
         return HttpResponseRedirect(reverse("ticketapp:ticket-detail", kwargs={'pk': ticket_id}))
+
+
+class SearchResultView(LoginRequiredMixin, generic.ListView):
+    model = Ticket
+    template_name = 'ticketapp/search_results.html'
+
+    def get_queryset(self):
+        query = self.request.GET.get("q")
+        object_list = Ticket.objects.filter(
+            Q(title__icontains=query) | Q(customer_full_name__icontains=query) | Q(
+                issue_description__icontains=query)
+        ).filter(user=self.request.user)
+
+        return object_list
+
+
+class StaffSearchResultView(LoginRequiredMixin, generic.ListView):
+    model = Ticket
+    template_name = 'ticketapp/staff_search_results.html'
+
+    def get_queryset(self):
+        query = self.request.GET.get("q")
+        object_list = Ticket.objects.filter(
+            Q(title__icontains=query) | Q(customer_full_name__icontains=query) | Q(
+                issue_description__icontains=query)
+        ).filter(assigned_to=self.request.user)
+
+        return object_list
+
+
+class AllSearchResultView(LoginRequiredMixin, generic.ListView):
+    model = Ticket
+    template_name = 'ticketapp/staff_search_results.html'
+
+    def get_queryset(self):
+        query = self.request.GET.get("q")
+        object_list = Ticket.objects.filter(
+            Q(title__icontains=query) | Q(customer_full_name__icontains=query) | Q(
+                issue_description__icontains=query)
+        )
+
+        return object_list

@@ -5,16 +5,13 @@
 
 
 <div class="container bg-light mt-2 align-content-center pt-2 pb-2">
-    <h1>Unresolved Tickets</h1>
+    <h1>Search Results</h1>
 </div>
 
-<div class="container d-flex mt-4 justify-content-between g-2">
-    <a href="{% url 'ticketapp:create-ticket' %}" class="btn btn-outline-primary">Create a new record</a>
 
-    <form action="{% if user.is_staff %} {% url 'ticketapp:search-results' %} {% else %} {% url 'ticketapp:search' %} {% endif %}" method="get" class="d-flex ml-auto">
-        <input type="text" class="form-control mr-2" placeholder="Search..." name='q'>
-        <input type="submit" value="Search" class="btn btn-secondary">
-    </form>
+
+<div class="container">
+    <a href="{% url 'ticketapp:create-ticket' %}" class="btn btn-outline-primary">Create a new record</a>
 </div>
 
 
@@ -27,19 +24,21 @@
                 <th scope="col">Customer</th>
                 <th scope="col">Customer Email</th>
                 <th scope="col">Urgent</th>
+                <th scope="col">Assigned To</th>
                 <th scope="col">Resolved</th>
                 <th scope="col"></th>
             </tr>
         </thead>
 
         <tbody>
-            {% for ticket in tickets %}
+            {% for ticket in object_list %}
             <tr>
                 <td>{{ ticket.title }}</td>
                 <td>{{ ticket.customer_full_name }}</td>
                 <td>{{ ticket.customer_email }}</td>
                 <td>{{ ticket.urgent_status }}</td>
-                <td>{{ ticket.completed_status }}</td>
+                <td>{{ticket.assigned_to}}</td>
+                <td class="{% if ticket.completed_status %} text-success {% else %}text-danger{% endif %}">{{ ticket.completed_status }}</td>
                 <td>
                     <a href="{% url 'ticketapp:ticket-detail' pk=ticket.pk %}" class="btn btn-info">
                         View
@@ -47,10 +46,11 @@
                 </td>
             </tr>
             {% empty %}
-            No records added
+            No records matched
             {% endfor %}
         </tbody>
     </table>
 </div>
+
 
 {% endblock content %}

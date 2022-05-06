@@ -22,6 +22,11 @@
 </div>
 
 <div class="container d-flex mt-2 ">
+    {% if object.completed_status != True %}
+        <a href="{% url 'ticketapp:mark-resolved' id=object.pk %}" class="btn btn-success mr-2">Mark Resolved</a>
+    {% else %}
+        <a href="{% url 'ticketapp:mark-unresolved' id=object.pk %}" class="btn btn-success mr-2">Mark unresolved</a>
+    {% endif %}
     <a href="{% url 'ticketapp:update-ticket' pk=object.pk %}" class="btn btn-primary mr-2">Edit</a>
     <a href="{% url 'ticketapp:delete-ticket' pk=object.pk %}" class="btn btn-danger">Delete</a>
 </div>

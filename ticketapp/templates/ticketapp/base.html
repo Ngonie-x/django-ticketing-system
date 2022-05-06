@@ -29,7 +29,11 @@
       <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
         <div class="navbar-nav">
           <a class="nav-link" href="{% url 'ticketapp:ticket-list' %}">Dashboard</a>
-          <a class="nav-link" href="{% url 'ticketapp:all-tickets' %}">Tickets</a>
+
+          {% if user.is_staff %}
+            <a class="nav-link" href="{% url 'ticketapp:all-tickets' %}">Tickets</a>
+          {% endif %}
+
           <a class="nav-link" href="{% url 'ticketapp:create-ticket' %}">New Ticket</a>
         </div>
       </div>

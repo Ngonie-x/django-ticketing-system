@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 import uuid
 
 # Create your models here.
@@ -15,7 +16,7 @@ class Ticket(models.Model):
         ('Infrastructure and Networking', 'Infrastructure and Networking'),
         ('Database Administrator', 'Database Administrator')
     )
-
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     ticket_id = models.UUIDField(default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=50)
     customer_full_name = models.CharField(max_length=200)
@@ -27,7 +28,7 @@ class Ticket(models.Model):
     urgent_status = models.BooleanField(default=False)
     completed_status = models.BooleanField(default=False)
     assigned_to = models.ForeignKey(
-        User, on_delete=models.CASCADE, null=True, blank=True)
+        User, on_delete=models.CASCADE, related_name='assigned_to', null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):

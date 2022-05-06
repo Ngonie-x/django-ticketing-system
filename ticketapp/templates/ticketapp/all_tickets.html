@@ -13,8 +13,8 @@
 <div class="container d-flex mt-4 justify-content-between g-2">
     <a href="{% url 'ticketapp:create-ticket' %}" class="btn btn-outline-primary">Create a new record</a>
 
-    <form action="" method="get" class="d-flex ml-auto">
-        <input type="text" class="form-control mr-2" placeholder="Search...">
+    <form action="{% url 'ticketapp:search-all' %}" method="get" class="d-flex ml-auto">
+        <input type="text" class="form-control mr-2" placeholder="Search..." name='q'>
         <input type="submit" value="Search" class="btn btn-secondary">
     </form>
 </div>
@@ -29,6 +29,7 @@
                 <th scope="col">Customer</th>
                 <th scope="col">Customer Email</th>
                 <th scope="col">Urgent</th>
+                <th scope="col">Assigned To</th>
                 <th scope="col">Resolved</th>
                 <th scope="col"></th>
             </tr>
@@ -41,7 +42,8 @@
                 <td>{{ ticket.customer_full_name }}</td>
                 <td>{{ ticket.customer_email }}</td>
                 <td>{{ ticket.urgent_status }}</td>
-                <td>{{ ticket.completed_status }}</td>
+                <td>{{ticket.assigned_to}}</td>
+                <td class="{% if ticket.completed_status %} text-success {% else %}text-danger{% endif %}">{{ ticket.completed_status }}</td>
                 <td>
                     <a href="{% url 'ticketapp:ticket-detail' pk=ticket.pk %}" class="btn btn-info">
                         View
