@@ -1,4 +1,4 @@
-from turtle import title
+import datetime
 from django.shortcuts import render, HttpResponseRedirect
 from django.urls import reverse_lazy, reverse
 from django.views import generic
@@ -89,7 +89,18 @@ def unresolved_tickets(request):
 
 @login_required
 def mark_ticket_as_resolved(request, id):
-    Ticket.objects.filter(id=id).update(completed_status=True)
+    if request.method == 'POST':
+        comment = request.POST['comment']
+        ticket = Ticket.objects.get(id=id)
+        user = request.user
+        date_time = datetime.datetime.now()
+        ticket.resolved_by = user
+        ticket.resolved_date = date_time
+        ticket.completed_status
+        Comment.objects.create(ticket=ticket, user=user, text=comment)
+        Ticket.objects.filter(id=id).update(
+            completed_status=True, resolved_by=user, resolved_date=date_time)
+
     return HttpResponseRedirect(reverse("ticketapp:ticket-detail", kwargs={'pk': id}))
 
 
@@ -105,6 +116,10 @@ def add_comment(request, ticket_id):
         comment = request.POST['comment']
         ticket = Ticket.objects.get(id=ticket_id)
         user = request.user
+        date_time = datetime.datetime.now()
+        ticket.resolved_by = user
+        ticket.resolved_date = date_time
+        ticket.completed_status
 
         Comment.objects.create(ticket=ticket, user=user, text=comment)
         return HttpResponseRedirect(reverse("ticketapp:ticket-detail", kwargs={'pk': ticket_id}))

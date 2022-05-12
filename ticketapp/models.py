@@ -29,7 +29,10 @@ class Ticket(models.Model):
     completed_status = models.BooleanField(default=False)
     assigned_to = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='assigned_to', null=True, blank=True)
+    resolved_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='resolved_by', null=True, blank=True)
     created_date = models.DateTimeField(auto_now_add=True, null=True)
+    resolved_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -39,7 +42,7 @@ class Ticket(models.Model):
 
 
 class Comment(models.Model):
-    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
+    ticket = models.OneToOneField(Ticket, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.CharField(max_length=500)
     created_date = models.DateTimeField(null=True, auto_now_add=True)

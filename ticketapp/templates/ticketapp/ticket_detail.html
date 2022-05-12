@@ -12,7 +12,7 @@
     <p>Phone number: {{object.customer_phone_number}}</p>
     <p>Email: <a href="mailto:{{object.customer_email}}">{{object.customer_email}}</a></p>
     <p>Urgent: {{object.urgent_status}}</p>
-    <p>Completed: {{object.completed_status}}</p>
+    <p>Resolved: {{object.completed_status}}</p>
     <p>Assigned To: {{object.assigned_to.first_name}} {{object.assigned_to.last_name}}</p>
     <p>Created: {{object.created_date}}</p>
 
@@ -22,32 +22,48 @@
 </div>
 
 <div class="container d-flex mt-2 ">
-    {% if object.completed_status != True %}
-        <a href="{% url 'ticketapp:mark-resolved' id=object.pk %}" class="btn btn-success mr-2">Mark Resolved</a>
-    {% else %}
-        <a href="{% url 'ticketapp:mark-unresolved' id=object.pk %}" class="btn btn-success mr-2">Mark unresolved</a>
+
+    {% if user.is_staff %}
+        {% if object.completed_status != True %}
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#markResolvedModal">Mark Resolved</button>
+        {% comment %} {% else %}
+            <a href="{% url 'ticketapp:mark-unresolved' id=object.pk %}" class="btn btn-success">Mark unresolved</a> {% endcomment %}
+        {% endif %}
     {% endif %}
-    <a href="{% url 'ticketapp:update-ticket' pk=object.pk %}" class="btn btn-primary mr-2">Edit</a>
-    <a href="{% url 'ticketapp:delete-ticket' pk=object.pk %}" class="btn btn-danger">Delete</a>
+    
+    <a href="{% url 'ticketapp:update-ticket' pk=object.pk %}" class="btn btn-primary mx-2">Edit</a>
+    <a href="{% url 'ticketapp:delete-ticket' pk=object.pk %}" class="btn btn-danger mx-2">Delete</a>
 </div>
 
-
-<div class="container">
-    <form action="http://127.0.0.1:8000/add-comment/{{object.pk}}/" method="post">
-        {% csrf_token %}
-        <div class="form-group mt-2 mb-2">
-
-            <textarea name="comment" cols="15" rows="10" class="form-control" placeholder="Add Comment"></textarea>
-
-            <input type="submit" class="btn btn-secondary mt-2">
-
+<!-- Modal -->
+<div class="modal fade" id="markResolvedModal" tabindex="-1" aria-labelledby="markResolvedModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="markResolvedModalLabel">Add Note</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form action="{% url 'ticketapp:mark-resolved' id=object.pk %}" method="post">
+                {% csrf_token %}
+                <div class="form-group mt-2 mb-2">
+        
+                    <textarea name="comment" cols="15" rows="10" class="form-control" placeholder="Add Comment"></textarea>
+        
+                    <input type="submit" class="btn btn-secondary mt-2">
+        
+                </div>
+        
+            </form>
+          </div>
         </div>
-
-    </form>
+    </div>
 </div>
 
+<div class="container mt-4">
 
-<div class="container">
+    <h2>Note</h2>
+
     {% for comment in comments %}
     <div class="bg-light mt-2 mb-2">
         <p class="text-secondary">@{{comment.user.username}} {{comment.created_date}}</p>

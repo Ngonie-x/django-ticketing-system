@@ -3,6 +3,7 @@
 <p class="login-title">Login</p>
 
 <form method="POST" class="login-form">
+  {% csrf_token %}
   <h1>Ticket System</h1>
 
   <div class="form-inner">
@@ -12,7 +13,7 @@
       <li class="{{ message.tags }}">{{ message }}</li>
       {% endfor %}
     </ul>
-    {% endif %} {% csrf_token %}
+    {% endif %}
 
     <div class="input-group">
       <input type="text" name="username" id="username" placeholder="Username" />
