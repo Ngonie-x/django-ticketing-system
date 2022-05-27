@@ -48,7 +48,7 @@
                 {% csrf_token %}
                 <div class="form-group mt-2 mb-2">
         
-                    <textarea name="comment" cols="15" rows="10" class="form-control" placeholder="Add Comment"></textarea>
+                    <textarea name="comment" cols="15" rows="10" class="form-control" placeholder="Add note on how issue was solved..."></textarea>
         
                     <input type="submit" class="btn btn-secondary mt-2">
         
@@ -60,18 +60,23 @@
     </div>
 </div>
 
-<div class="container mt-4">
+{% if comment %}
+    <div class="container mt-4">
 
-    <h2>Note</h2>
+        <h2>Note</h2>
 
-    {% for comment in comments %}
-    <div class="bg-light mt-2 mb-2">
-        <p class="text-secondary">@{{comment.user.username}} {{comment.created_date}}</p>
-        <p>{{comment.text}}</p>
+        {% for comment in comments %}
+        <div class="bg-light mt-2 mb-2">
+            <p class="text-secondary">@{{comment.user.username}} {{comment.created_date}}</p>
+            <p>{{comment.text}}</p>
+        </div>
+
+        {% endfor %}
     </div>
 
-    {% endfor %}
-</div>
+{% endif %}
+
+
 
 
 {% endblock content %}

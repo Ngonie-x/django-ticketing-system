@@ -1,12 +1,12 @@
-from distutils import errors
-import imapclient
-import pyzmail
 import csv
 import json
+import random
 import shelve
 import email
 import imaplib
-
+from django.contrib.auth.models import User
+from .models import Ticket
+from .email_regex import GetEmailDetails
 
 EMAIL = 'ipcconsultants1@gmail.com'
 PASSWORD = '9MG8pxqFZ+?vPnhq'
@@ -71,7 +71,7 @@ class EmailDownload:
 
         if counter == 0:
 
-            for num in self.uids[0].split()[:20]:
+            for num in self.uids[0].split()[-1:]:
                 _, data = imap_object.fetch(num, '(RFC822)')
                 _, bytes_data = data[0]
 
@@ -79,6 +79,7 @@ class EmailDownload:
                 email_message = email.message_from_bytes(bytes_data)
 
                 self.save_data_in_json(email_message)
+                self.save_to_db(email_message)
         else:
             for num in self.uids[0].split()[counter:]:
                 _, data = imap_object.fetch(num, '(RFC822)')
@@ -115,6 +116,47 @@ class EmailDownload:
         data_output_file.close()
 
     #################################################################################################################################
+
+    def save_to_db(self, email_message):
+        """Save the information extracted to a database
+
+        Args:
+            email_message (dict): The dictionary containing information about the ticket
+        """
+
+        user = User.objects.get(username='chatbot')
+        subject = email_message["subject"]
+        # to = email_message["to"]
+        # from_ = email_message["from"]
+        date_ = email_message["date"]
+        for part in email_message.walk():
+            if part.get_content_type() == "text/plain" or part.get_content_type() == "text/html":
+                message = part.get_payload(decode=True)
+                message = message.decode('utf-8', 'ignore')
+                break
+
+        email_details = GetEmailDetails(message)
+
+        ticket_object = Ticket.objects.create(
+            user=user,
+            title=subject,
+            customer_full_name=email_details.get_name(),
+            customer_phone_number=email_details.get_phone_number(),
+            customer_email=email_details.get_email(),
+            issue_description=email_details.get_issue_description(),
+            ticket_section=email_details.get_issue_section(),
+            created_date=date_
+        )
+        
+        assigned_to = random.choice(User.objects.exclude(username='chatbot'))
+        
+        ticket_object.assigned_to = assigned_to
+        
+        
+
+        print("Ticket created successfully")
+
+    ##################################################################################################################################
 
     def save_data_in_json(self, email_message):
         """Writing the information to a json file"""
@@ -154,6 +196,3 @@ class EmailDownload:
         print("Logged Out!!")
 
     #################################################################################################################################
-
-
-EmailDownload(EMAIL, PASSWORD).login_to_imap_server()

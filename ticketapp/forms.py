@@ -14,8 +14,6 @@ class TicketForm(forms.ModelForm):
         max_length=40, widget=forms.EmailInput(attrs={'class': 'form-control'}))
     issue_description = forms.CharField(
         max_length=100, widget=forms.Textarea(attrs={'class': 'form-control'}))
-    # completed_status = forms.BooleanField(
-    #     widget=forms.CheckboxInput(attrs={'class': 'form-control'}))
     assigned_to = forms.ModelChoiceField(
         queryset=User.objects.all(), empty_label='Select User', widget=forms.Select(attrs={'class': 'form-control'}))
 

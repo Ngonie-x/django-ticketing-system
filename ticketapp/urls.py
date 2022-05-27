@@ -26,4 +26,12 @@ urlpatterns = [
     path('search-results/', views.StaffSearchResultView.as_view(),
          name='search-results'),
     path('search-all/', views.AllSearchResultView.as_view(), name='search-all'),
+
+    # user statistics page
+    path('user-statistics/', views.UserPerformanceListView.as_view(),
+         name='user-performance-list'),
+    path('user-statistics/user-detail/<str:username>/',
+         views.user_performance_details, name='user-performance-detail'),
+
+    path("test-email/", views.test_email, name="test-email"),
 ]

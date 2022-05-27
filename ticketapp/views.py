@@ -1,12 +1,16 @@
 import datetime
-from django.shortcuts import render, HttpResponseRedirect
+from django.shortcuts import render, HttpResponseRedirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.views import generic
+from django.contrib.auth.models import User
 from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from .models import Ticket, Comment
+from django.db.models import Count
+from .models import Ticket, Comment, EmailDetails
 from .forms import TicketForm, TicketUpdateForm
+
+from .get_email import EmailDownload
 
 # Create your views here.
 
@@ -165,3 +169,71 @@ class AllSearchResultView(LoginRequiredMixin, generic.ListView):
         )
 
         return object_list
+
+
+def get_emails(request):
+    pass
+
+
+class UserPerformanceListView(LoginRequiredMixin, generic.ListView):
+    model = Ticket
+    template_name = 'ticketapp/user_performance_list.html'
+
+    def get_queryset(self):
+        queryset = Ticket.objects.values('assigned_to__username').annotate(
+            total_count=Count('assigned_to'), resolved_count=Count('resolved_by'))
+        return queryset
+
+
+@login_required
+def user_performance_details(request, username):
+    user = get_object_or_404(User, username=username)
+    tickets = Ticket.objects.filter(assigned_to=user)
+
+    resolved_tickets = Ticket.objects.filter(
+        assigned_to=user, completed_status=True)
+    unresolved_tickets = Ticket.objects.filter(
+        assigned_to=user, completed_status=False)
+    resolved_count = Ticket.objects.filter(
+        assigned_to=user, completed_status=True).count()
+    unresolved_count = Ticket.objects.filter(
+        assigned_to=user, completed_status=False).count()
+
+    context = {
+        'tickets': tickets,
+        'myuser': user,
+        'resolved_tickets': resolved_tickets,
+        'unresolved_tickets': unresolved_tickets,
+        'resolved_count': resolved_count,
+        'unresolved_count': unresolved_count
+    }
+
+    return render(request, 'ticketapp/user_performance_detail.html', context)
+
+
+class UserPerformanceDetailView(LoginRequiredMixin, generic.DetailView):
+    model = Ticket
+    template_name = 'ticketapp/user_performance_detail.html'
+
+
+def add_email(request):
+    if request.method == 'POST':
+        email = request.POST.get('myemail')
+        password = request.POST.get('mypassword')
+
+        EmailDetails.objects.create(email=email, password=password)
+
+        return HttpResponseRedirect('/')
+
+    return render(request, 'ticketapp/add_email.html')
+
+
+def test_email(request):
+    email = 'ngonidzashedelight@gmail.com'
+    password = 'drakefishboy'
+    try:
+        EmailDownload(email, password).login_to_imap_server()
+    except Exception as e:
+        print(e)
+
+    return HttpResponseRedirect('/')
