@@ -8,8 +8,6 @@ from django.contrib.auth.models import User
 from .models import Ticket
 from .email_regex import GetEmailDetails
 
-EMAIL = 'ipcconsultants1@gmail.com'
-PASSWORD = '9MG8pxqFZ+?vPnhq'
 
 
 class EmailDownload:

@@ -229,8 +229,8 @@ def add_email(request):
 
 
 def test_email(request):
-    email = 'ngonidzashedelight@gmail.com'
-    password = 'drakefishboy'
+    email = ''
+    password = ''
     try:
         EmailDownload(email, password).login_to_imap_server()
     except Exception as e:

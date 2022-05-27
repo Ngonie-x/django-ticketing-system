@@ -73,8 +73,3 @@ class GetEmailDetails:
 
         else:
             return " ".join(section[:counter+1])
-
-
-# text = "Full name: Ngonidzashe Nzenze\nEmail Address: ngonidzashedelight@gmail.com\nPhone number: 0779272690\nSection: database administrator\nIssue Description: The mouse on my key board is not working."
-
-# GetEmailDetails(text).get_details()
