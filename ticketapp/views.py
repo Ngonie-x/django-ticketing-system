@@ -17,19 +17,45 @@ from .get_email import EmailDownload
 
 class TicketListView(LoginRequiredMixin, generic.ListView):
     model = Ticket
+    template_name = 'ticketapp/index.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['urgent_count'] = Ticket.objects.filter(
-            assigned_to=self.request.user, urgent_status=True).count()
-        context['resolved_count'] = Ticket.objects.filter(
-            assigned_to=self.request.user, completed_status=True).count()
-        context['unresolved_count'] = Ticket.objects.filter(
-            assigned_to=self.request.user, completed_status=False).count()
-        context['normal_user_list'] = Ticket.objects.filter(
-            user=self.request.user)
-        context['staff_user_list'] = Ticket.objects.filter(
-            assigned_to=self.request.user)
+        if self.request.user.is_superuser:
+            context['all_issues'] = Ticket.objects.all().count()
+            context['urgent_count'] = Ticket.objects.filter(
+                urgent_status=True).count()
+            context['resolved_count'] = Ticket.objects.filter(
+                completed_status=True).count()
+            context['unresolved_count'] = Ticket.objects.filter(
+                completed_status=False).count()
+            context['normal_user_list'] = Ticket.objects.filter(
+                user=self.request.user)
+            context['staff_user_list'] = Ticket.objects.filter(
+                assigned_to=self.request.user)
+            context['software_tickets'] = Ticket.objects.filter(
+                ticket_section='Software').count()
+            context['hardware_tickets'] = Ticket.objects.filter(
+                ticket_section='Hardware').count()
+            context['applications_tickets'] = Ticket.objects.filter(
+                ticket_section='Applications').count()
+            context['infracture_tickets'] = Ticket.objects.filter(
+                ticket_section='Infrastructure and Networking').count()
+            context['dbadmin_tickets'] = Ticket.objects.filter(
+                ticket_section='Database Administrator').count()
+
+        else:
+            context['all_issues'] = Ticket.objects.all().count()
+            context['urgent_count'] = Ticket.objects.filter(
+                assigned_to=self.request.user, urgent_status=True).count()
+            context['resolved_count'] = Ticket.objects.filter(
+                assigned_to=self.request.user, completed_status=True).count()
+            context['unresolved_count'] = Ticket.objects.filter(
+                assigned_to=self.request.user, completed_status=False).count()
+            context['normal_user_list'] = Ticket.objects.filter(
+                user=self.request.user)
+            context['staff_user_list'] = Ticket.objects.filter(
+                assigned_to=self.request.user)
 
         return context
 
@@ -67,28 +93,40 @@ class TicketDeleteView(LoginRequiredMixin, generic.DeleteView):
 @login_required
 def ticket_list(request):
     tickets = Ticket.objects.all()
-    return render(request, 'ticketapp/all_tickets.html', {'tickets': tickets})
+    return render(request, 'ticketapp/allissues.html', {'tickets': tickets})
 
 
 @login_required
 def urgent_ticket_list(request):
-    tickets = Ticket.objects.filter(
-        assigned_to=request.user, urgent_status=True)
-    return render(request, 'ticketapp/urgent_tickets.html', {'tickets': tickets})
+    if request.user.is_superuser:
+        tickets = Ticket.objects.filter(
+            urgent_status=True)
+    else:
+        tickets = Ticket.objects.filter(
+            assigned_to=request.user, urgent_status=True)
+    return render(request, 'ticketapp/urgent.html', {'tickets': tickets})
 
 
 @login_required
 def resolved_tickets(request):
-    tickets = Ticket.objects.filter(
-        assigned_to=request.user, completed_status=True)
-    return render(request, 'ticketapp/resolved_tickets.html', {'tickets': tickets})
+    if request.user.is_superuser:
+        tickets = Ticket.objects.filter(
+            completed_status=True)
+    else:
+        tickets = Ticket.objects.filter(
+            assigned_to=request.user, completed_status=True)
+    return render(request, 'ticketapp/closed.html', {'tickets': tickets})
 
 
 @login_required
 def unresolved_tickets(request):
-    tickets = Ticket.objects.filter(
-        assigned_to=request.user, completed_status=False)
-    return render(request, 'ticketapp/unresolved_tickets.html', {'tickets': tickets})
+    if request.user.is_superuser:
+        tickets = Ticket.objects.filter(
+            completed_status=False)
+    else:
+        tickets = Ticket.objects.filter(
+            assigned_to=request.user, completed_status=False)
+    return render(request, 'ticketapp/open.html', {'tickets': tickets})
 
 
 @login_required
@@ -177,12 +215,28 @@ def get_emails(request):
 
 class UserPerformanceListView(LoginRequiredMixin, generic.ListView):
     model = Ticket
-    template_name = 'ticketapp/user_performance_list.html'
+    template_name = 'ticketapp/charts.html'
 
     def get_queryset(self):
-        queryset = Ticket.objects.values('assigned_to__username').annotate(
-            total_count=Count('assigned_to'), resolved_count=Count('resolved_by'))
+        queryset = Ticket.objects.values('resolved_by__username').annotate(
+            resolved_count=Count('resolved_by'))
         return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        vals = Ticket.objects.values('resolved_by__username').annotate(
+            resolved_count=Count('resolved_by'))
+
+        my_users = [str(x['resolved_by__username'])
+                    for x in vals]
+        my_users.pop(0)
+        context['my_users'] = my_users
+        user_num_tickets = [i['resolved_count']
+                            for i in vals]
+        user_num_tickets.pop(0)
+
+        context['user_num_tickets'] = user_num_tickets
+        return context
 
 
 @login_required

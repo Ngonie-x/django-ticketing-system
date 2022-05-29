@@ -3,9 +3,6 @@
 
 {% block content %}
 
-
-
-
 <div class="container">
     <h1>{{object.title}}</h1>
     <p>Customer name: {{object.customer_full_name}}</p>
@@ -25,15 +22,29 @@
 
     {% if user.is_staff %}
         {% if object.completed_status != True %}
-        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#markResolvedModal">Mark Resolved</button>
-        {% comment %} {% else %}
-            <a href="{% url 'ticketapp:mark-unresolved' id=object.pk %}" class="btn btn-success">Mark unresolved</a> {% endcomment %}
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#markResolvedModal">Mark Resolved</button>
         {% endif %}
     {% endif %}
     
     <a href="{% url 'ticketapp:update-ticket' pk=object.pk %}" class="btn btn-primary mx-2">Edit</a>
     <a href="{% url 'ticketapp:delete-ticket' pk=object.pk %}" class="btn btn-danger mx-2">Delete</a>
 </div>
+
+{% if comments %}
+    <div class="container mt-4">
+
+        <h2>Note</h2>
+
+        {% for comment in comments %}
+        <div class="bg-light mt-2 mb-2">
+            <p class="text-secondary">@{{comment.user.username}} {{comment.created_date}}</p>
+            <p>{{comment.text}}</p>
+        </div>
+
+        {% endfor %}
+    </div>
+
+{% endif %}
 
 <!-- Modal -->
 <div class="modal fade" id="markResolvedModal" tabindex="-1" aria-labelledby="markResolvedModalLabel" aria-hidden="true">
@@ -60,21 +71,7 @@
     </div>
 </div>
 
-{% if comment %}
-    <div class="container mt-4">
 
-        <h2>Note</h2>
-
-        {% for comment in comments %}
-        <div class="bg-light mt-2 mb-2">
-            <p class="text-secondary">@{{comment.user.username}} {{comment.created_date}}</p>
-            <p>{{comment.text}}</p>
-        </div>
-
-        {% endfor %}
-    </div>
-
-{% endif %}
 
 
 

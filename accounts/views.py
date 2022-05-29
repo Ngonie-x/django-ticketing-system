@@ -39,4 +39,4 @@ def signup(request):
             return redirect('/')
     else:
         form = SignUpForm()
-    return render(request, 'accounts/registration.html', {'form': form})
+    return render(request, 'accounts/register.html', {'form': form})
