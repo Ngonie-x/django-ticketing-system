@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.db.models import Count
 from .models import Ticket, Comment, EmailDetails
 from .forms import TicketForm, TicketUpdateForm
@@ -283,11 +284,13 @@ def add_email(request):
 
 
 def test_email(request):
-    email = ''
-    password = ''
+    email = 'icthelpdesk23@gmail.com'
+    password = 'tin_ashe10#1'
     try:
         EmailDownload(email, password).login_to_imap_server()
+        messages.success(request, "Email retrieved successfully")
     except Exception as e:
         print(e)
+        messages.error(request, "Failed to retrieve emails")
 
     return HttpResponseRedirect('/')

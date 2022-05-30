@@ -29,14 +29,22 @@ def user_logout(request):
 
 def signup(request):
     if request.method == 'POST':
+
         form = SignUpForm(request.POST)
+        raw_password = request.POST['password1']
+        password2 = request.POST['password2']
+
+        if raw_password != password2:
+            messages.error(request, 'Passwords do not match')
         if form.is_valid():
             form.save()
             username = form.cleaned_data['username']
             raw_password = form.cleaned_data['password1']
+
             user = authenticate(username=username, password=raw_password)
             login(request, user)
             return redirect('/')
+
     else:
         form = SignUpForm()
     return render(request, 'accounts/register.html', {'form': form})

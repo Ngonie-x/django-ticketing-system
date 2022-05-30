@@ -37,23 +37,48 @@
                             <div class="text-center">
                                 <h1 class="h4 text-gray-900 mb-4">Create an Account!</h1>
                             </div>
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <p class="text-danger text-center">{{ message }}</p>
+                                {% endfor %}
+                            {% endif %}
                             <form class="user" method="POST">
                                 {% csrf_token %}
                                 <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
                                         {{form.first_name}}
+                                        {% if form.first_name.errors %}
+                                            {% for error in form.first_name.errors %}
+                                                <p class="text-danger">{{error|escape}}</p>
+                                            {% endfor %}
+                                        {% endif %}
                                     </div>
                                     <div class="col-sm-6">
                                         {{form.last_name}}
+                                        {% if form.last_name.errors %}
+                                            {% for error in form.last_name.errors %}
+                                                <p class="text-danger">{{error|escape}}</p>
+                                            {% endfor %}
+                                        {% endif %}
                                     </div>
                                 </div>
 
                                 <div class="form-group">
                                     {{form.username}}
+                                    {% if form.username.errors %}
+                                        {% for error in form.username.errors %}
+                                            <p class="text-danger">{{error|escape}}</p>
+                                        {% endfor %}
+                                    {% endif %}
                                 </div>
 
                                 <div class="form-group">
                                     {{form.email}}
+                                    {% if form.email.errors %}
+                                        {% for error in form.email.errors %}
+                                            <p class="text-danger">{{error|escape}}</p>
+                                        {% endfor %}
+                                    {% endif %}
                                 </div>
                                 <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">

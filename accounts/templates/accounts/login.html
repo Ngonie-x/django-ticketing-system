@@ -42,6 +42,12 @@
                                     <div class="text-center">
                                         <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
                                     </div>
+
+                                    {% if messages %}
+                                        {% for message in messages %}
+                                            <p class="text-danger text-center">{{ message }}</p>
+                                        {% endfor %}
+                                    {% endif %}
                                     <form class="user" method="POST">
                                         {% csrf_token %}
                                         <div class="form-group">

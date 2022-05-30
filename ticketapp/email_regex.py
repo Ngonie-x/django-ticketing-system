@@ -44,11 +44,14 @@ class GetEmailDetails:
         return None
 
     def get_issue_section(self):
-        section = self.issue_section.search(self.email).groups()
-        issue_section = self.process_section(section)
-        print("Section: ", issue_section)
-        if issue_section:
-            return issue_section.title()
+        words = ['Hardware', 'Software', 'Applications',
+                 'Infrastructure and Networking', 'Database Administrator']
+        for word in words:
+            if word.lower() in self.email.lower():
+                section = word
+                break
+        if section:
+            return section
         return None
 
     def get_issue_description(self):
