@@ -8,6 +8,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count
+from django.core.mail import send_mail
+from django.conf import settings
 from .models import Ticket, Comment, EmailDetails
 from .forms import TicketForm, TicketUpdateForm
 
@@ -45,8 +47,9 @@ class TicketListView(LoginRequiredMixin, generic.ListView):
             context['dbadmin_tickets'] = Ticket.objects.filter(
                 ticket_section='Database Administrator').count()
 
-        else:
-            context['all_issues'] = Ticket.objects.all().count()
+        elif self.request.user.is_staff:
+            context['all_issues'] = Ticket.objects.filter(
+                assigned_to=self.request.user).count()
             context['urgent_count'] = Ticket.objects.filter(
                 assigned_to=self.request.user, urgent_status=True).count()
             context['resolved_count'] = Ticket.objects.filter(
@@ -57,6 +60,17 @@ class TicketListView(LoginRequiredMixin, generic.ListView):
                 user=self.request.user)
             context['staff_user_list'] = Ticket.objects.filter(
                 assigned_to=self.request.user)
+
+            context['software_tickets'] = Ticket.objects.filter(
+                ticket_section='Software', assigned_to=self.request.user).count()
+            context['hardware_tickets'] = Ticket.objects.filter(
+                ticket_section='Hardware', assigned_to=self.request.user).count()
+            context['applications_tickets'] = Ticket.objects.filter(
+                ticket_section='Applications', assigned_to=self.request.user).count()
+            context['infracture_tickets'] = Ticket.objects.filter(
+                ticket_section='Infrastructure and Networking', assigned_to=self.request.user).count()
+            context['dbadmin_tickets'] = Ticket.objects.filter(
+                ticket_section='Database Administrator', assigned_to=self.request.user).count()
 
         return context
 
@@ -144,6 +158,12 @@ def mark_ticket_as_resolved(request, id):
         Ticket.objects.filter(id=id).update(
             completed_status=True, resolved_by=user, resolved_date=date_time)
 
+        subject = 'Issue resolved'
+        message = f'Good day.\n Please note your issue: \n{ticket.issue_description}\n has been resolved successfully\nRegards,\n ICT Helpdesk'
+        email_from = settings.EMAIL_HOST_USER
+        recipient_list = [ticket.customer_email, ]
+        send_mail(subject, message, email_from, recipient_list)
+
     return HttpResponseRedirect(reverse("ticketapp:ticket-detail", kwargs={'pk': id}))
 
 
@@ -208,10 +228,6 @@ class AllSearchResultView(LoginRequiredMixin, generic.ListView):
         )
 
         return object_list
-
-
-def get_emails(request):
-    pass
 
 
 class UserPerformanceListView(LoginRequiredMixin, generic.ListView):
@@ -283,7 +299,7 @@ def add_email(request):
     return render(request, 'ticketapp/add_email.html')
 
 
-def test_email(request):
+def get_emails(request):
     email = 'icthelpdesk23@gmail.com'
     password = 'tin_ashe10#1'
     try:

@@ -5,6 +5,8 @@ import shelve
 import email
 import imaplib
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.conf import settings
 from .models import Ticket
 from .email_regex import GetEmailDetails
 
@@ -69,24 +71,30 @@ class EmailDownload:
 
         if counter == 0:
 
-            for num in self.uids[0].split()[-1:]:
-                _, data = imap_object.fetch(num, '(RFC822)')
-                _, bytes_data = data[0]
+            for num in self.uids[0].split():
+                try:
+                    _, data = imap_object.fetch(num, '(RFC822)')
+                    _, bytes_data = data[0]
 
-                # convert the byte data to message
-                email_message = email.message_from_bytes(bytes_data)
+                    # convert the byte data to message
+                    email_message = email.message_from_bytes(bytes_data)
 
-                self.save_data_in_json(email_message)
-                self.save_to_db(email_message)
+                    self.save_data_in_json(email_message)
+                    self.save_to_db(email_message)
+                except Exception as e:
+                    print(e)
         else:
             for num in self.uids[0].split()[counter:]:
-                _, data = imap_object.fetch(num, '(RFC822)')
-                _, bytes_data = data[0]
+                try:
+                    _, data = imap_object.fetch(num, '(RFC822)')
+                    _, bytes_data = data[0]
 
-                # convert the byte data to message
-                email_message = email.message_from_bytes(bytes_data)
+                    # convert the byte data to message
+                    email_message = email.message_from_bytes(bytes_data)
 
-                self.save_data_in_json(email_message)
+                    self.save_data_in_json(email_message)
+                except Exception as e:
+                    print(e)
 
         print("saving counter")
         with shelve.open('data') as db:
@@ -150,8 +158,12 @@ class EmailDownload:
         
         ticket_object.assigned_to = assigned_to
         
+        subject = 'Issue recieved'
+        message = 'Good day.\n Your issue has been created successfully. You will recieve an email once it has been resolved.\n Regards,\n ICT Helpdesk'
+        email_from = settings.EMAIL_HOST_USER
+        recipient_list = [email_details.get_email(),]
+        send_mail( subject, message, email_from, recipient_list )
         
-
         print("Ticket created successfully")
 
     ##################################################################################################################################

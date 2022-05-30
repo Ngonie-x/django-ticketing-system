@@ -33,5 +33,5 @@ urlpatterns = [
     path('user-statistics/user-detail/<str:username>/',
          views.user_performance_details, name='user-performance-detail'),
 
-    path("test-email/", views.test_email, name="test-email"),
+    path("get-emails/", views.get_emails, name="get-emails"),
 ]
